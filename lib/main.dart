@@ -1,7 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -32,12 +36,39 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  void _login() {
-    print(
-        'Username: ${_usernameController.text}, Password: ${_passwordController.text}');
+  Future<void> _login() async {
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      User? user = userCredential.user;
+      if (user != null) {
+        // สร้าง PigeonUserDetails
+        final PigeonUserDetails userDetails = PigeonUserDetails(
+          userId: user.uid,
+          email: user.email ?? 'N/A',
+          displayName: user.displayName ?? 'N/A',
+        );
+
+        // ส่งข้อมูลไปยัง native platform
+        final Api api = Api();
+        await api.sendUserDetails(userDetails);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login Successful!')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login Failed: $e')),
+      );
+    }
   }
 
   @override
@@ -53,10 +84,10 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/background.png'), // ไฟล์ SVG
-                fit: BoxFit.none, // No scaling
+                image: AssetImage('assets/background.png'),
+                fit: BoxFit.none,
                 alignment: Alignment.topLeft,
-                repeat: ImageRepeat.repeat, // Repeat the image
+                repeat: ImageRepeat.repeat,
               ),
             ),
           ),
@@ -88,9 +119,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                   TextField(
-                    controller: _usernameController,
+                    controller: _emailController,
                     decoration: const InputDecoration(
-                      labelText: 'Username',
+                      labelText: 'Email',
                       border: OutlineInputBorder(
                         borderSide: BorderSide(
                           color: Colors.blue,
@@ -99,7 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         borderRadius: BorderRadius.all(Radius.circular(50)),
                       ),
                       filled: true,
-                      fillColor: Colors.white, // พื้นหลังขาว
+                      fillColor: Colors.white,
                     ),
                     style: TextStyle(
                       letterSpacing: 2.0,
@@ -150,3 +181,35 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
+
+// Pigeon API
+// pigeon.dart
+// Note: คุณต้องรันคำสั่ง pigeon เพื่อสร้างโค้ด platform-specific
+class PigeonUserDetails {
+  final String userId;
+  final String email;
+  final String displayName;
+
+  PigeonUserDetails({
+    required this.userId,
+    required this.email,
+    required this.displayName,
+  });
+
+  // Factory constructor to parse data from a list
+  factory PigeonUserDetails.fromList(List<Object?> data) {
+    return PigeonUserDetails(
+      userId: data[0] as String,
+      email: data[1] as String,
+      displayName: data[2] as String,
+    );
+  }
+}
+
+class Api {
+  Future<void> sendUserDetails(PigeonUserDetails details) async {
+    // Implement Native Communication via generated Pigeon code
+  }
+}
+
