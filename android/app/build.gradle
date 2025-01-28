@@ -39,14 +39,6 @@ android {
     }
 }
 
-dependencies {
-    implementation platform('com.google.firebase:firebase-bom:31.0.2')
-    implementation 'com.google.firebase:firebase-auth'
-}
-
 flutter {
     source = "../.."
 }
-
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'com.android.application'
