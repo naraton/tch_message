@@ -39,9 +39,10 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final _formKey = GlobalKey<FormState>();
+  final Future<FirebaseApp> firebase = Firebase.initializeApp();
 
   void _login() async {
-    if (_formKey.currentState!.validate()) {
+    if(_formKey.currentState!.validate()){
       try {
         UserCredential userCredential = await _auth.signInWithEmailAndPassword(
           email: _emailController.text.trim(),
@@ -49,142 +50,187 @@ class _MyHomePageState extends State<MyHomePage> {
         );
 
         User? user = userCredential.user;
-        if (user != null) {
+        if(user != null){
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('เข้าสู่ระบบสำเร็จ!')),
+            const SnackBar(content: Text('Login Successful!')),
           );
         }
-      } catch (e) {
+      } 
+      catch(e){
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('เข้าสู่ระบบล้มเหลว: $e')),
+          SnackBar(content: Text('Login Failed: $e')),
         );
-        print(e);
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(0xFFE1ECFE),
-      body: Stack(children: [
-        Positioned.fill(
-          child: Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/background.png'), // ไฟล์ SVG
-                fit: BoxFit.none, // No scaling
-                alignment: Alignment.topLeft,
-                repeat: ImageRepeat.repeat, // Repeat the image
-              ),
-            ),
-          ),
-        ),
-        Center(
-          child: Align(
-            alignment: AlignmentDirectional(0.0, 0.0),
-            child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(50.0, 0.0, 50.0, 0.0),
-              child: Form(
-                key: _formKey,
+    return FutureBuilder(
+      future: firebase,
+      builder: (context, snapshot){
+        if(snapshot.hasError){
+          return Scaffold(
+            appBar: AppBar(title: Text("Error")),
+            body: Center(child: Text("Error: ${snapshot.error}")),
+          );
+        }
+
+        if(snapshot.connectionState == ConnectionState.done){
+          User? currentUser = _auth.currentUser;
+          if(currentUser != null){
+            return Scaffold(
+              appBar: AppBar(title: Text("Welcome")),
+              body: Center(
                 child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Align(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Welcome, ${currentUser.email}"),
+                    ElevatedButton(
+                      onPressed: () async {
+                        await FirebaseAuth.instance.signOut();
+                      },
+                      child: Text('Logout'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          
+          else{
+            return Scaffold(
+              backgroundColor: Color(0xFFE1ECFE),
+              body: Stack(children: [
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('assets/background.png'), // ไฟล์ SVG
+                        fit: BoxFit.none, // No scaling
+                        alignment: Alignment.topLeft,
+                        repeat: ImageRepeat.repeat, // Repeat the image
+                      ),
+                    ),
+                  ),
+                ),
+                Center(
+                  child: Align(
                     alignment: AlignmentDirectional(0.0, 0.0),
                     child: Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 15.0),
-                      child: Text(
-                        '"Login" TCH Message',
-                        style: TextStyle(
-                          fontSize: 28.0,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.0,
-                          fontFamily: GoogleFonts.ubuntu().fontFamily,
+                      padding: EdgeInsetsDirectional.fromSTEB(50.0, 0.0, 50.0, 0.0),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.max,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: <Widget>[
+                            Align(
+                              alignment: AlignmentDirectional(0.0, 0.0),
+                              child: Padding(
+                                padding:
+                                    EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 15.0),
+                                child: Text(
+                                  '"Login" TCH Message',
+                                  style: TextStyle(
+                                    fontSize: 28.0,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.0,
+                                    fontFamily: GoogleFonts.ubuntu().fontFamily,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            TextFormField(
+                              controller: _emailController,
+                              decoration: const InputDecoration(
+                                labelText: 'Email',
+                                border: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: Colors.blue,
+                                    width: 1.0,
+                                  ),
+                                  borderRadius: BorderRadius.all(Radius.circular(50)),
+                                ),
+                                filled: true,
+                                fillColor: Colors.white, // พื้นหลังขาว
+                              ),
+                              style: TextStyle(
+                                letterSpacing: 2.0,
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter an email';
+                                }
+                                final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                                if (!emailRegex.hasMatch(value)) {
+                                  return 'Please enter a valid email';
+                                }
+                                return null;
+                              },
+                            ),
+
+                            const SizedBox(height: 10.0),
+
+                            TextFormField(
+                              controller: _passwordController,
+                              obscureText: true,
+                              decoration: const InputDecoration(
+                                labelText: 'Password',
+                                border: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: Colors.blue,
+                                    width: 1.0,
+                                  ),
+                                  borderRadius: BorderRadius.all(Radius.circular(50)),
+                                ),
+                                filled: true,
+                                fillColor: Colors.white, // พื้นหลังขาว
+                              ),
+                              style: TextStyle(
+                                letterSpacing: 2.0,
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter a password';
+                                }
+                                return null;
+                              },
+                            ),
+
+                            const SizedBox(height: 10.0),
+                            
+                            ElevatedButton(
+                              onPressed: _login,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.purple,
+                                foregroundColor: Colors.white,
+                              ),
+                              child: const Text(
+                                'Login',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.blue,
-                          width: 1.0,
-                        ),
-                        borderRadius: BorderRadius.all(Radius.circular(50)),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white, // พื้นหลังขาว
-                    ),
-                    style: TextStyle(
-                      letterSpacing: 2.0,
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter an email';
-                      }
-                      final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                      if (!emailRegex.hasMatch(value)) {
-                        return 'Please enter a valid email';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 10.0),
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.blue,
-                          width: 1.0,
-                        ),
-                        borderRadius: BorderRadius.all(Radius.circular(50)),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white, // พื้นหลังขาว
-                    ),
-                    style: TextStyle(
-                      letterSpacing: 2.0,
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a password';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 10.0),
-                  ElevatedButton(
-                    onPressed: _login,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text(
-                      'Login',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              ),
-            ),
-          ),
-        ),
-      ]),
-    );
+                ),
+              ]),
+            );
+          }
+        }
+
+        return Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        );
+      });
   }
 }
