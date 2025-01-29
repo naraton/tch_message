@@ -11,7 +11,6 @@ void main() async  {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -39,25 +38,28 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final _formKey = GlobalKey<FormState>();
 
   void _login() async {
-    try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-
-      User? user = userCredential.user;
-      if (user != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login Successful!')),
+    if (_formKey.currentState!.validate()) {
+      try {
+        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
         );
+
+        User? user = userCredential.user;
+        if (user != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('เข้าสู่ระบบสำเร็จ!')),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('เข้าสู่ระบบล้มเหลว: $e')),
+        );
+        print(e);
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login Failed: $e')),
-      );
-      print(e);
     }
   }
 
@@ -65,10 +67,6 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFE1ECFE),
-      /* appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ), */
       body: Stack(children: [
         Positioned.fill(
           child: Container(
@@ -87,7 +85,9 @@ class _MyHomePageState extends State<MyHomePage> {
             alignment: AlignmentDirectional(0.0, 0.0),
             child: Padding(
               padding: EdgeInsetsDirectional.fromSTEB(50.0, 0.0, 50.0, 0.0),
-              child: Column(
+              child: Form(
+                key: _formKey,
+                child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -108,7 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                   ),
-                  TextField(
+                  TextFormField(
                     controller: _emailController,
                     decoration: const InputDecoration(
                       labelText: 'Email',
@@ -125,9 +125,19 @@ class _MyHomePageState extends State<MyHomePage> {
                     style: TextStyle(
                       letterSpacing: 2.0,
                     ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter an email';
+                      }
+                      final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                      if (!emailRegex.hasMatch(value)) {
+                        return 'Please enter a valid email';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 10.0),
-                  TextField(
+                  TextFormField(
                     controller: _passwordController,
                     obscureText: true,
                     decoration: const InputDecoration(
@@ -145,6 +155,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     style: TextStyle(
                       letterSpacing: 2.0,
                     ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a password';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 10.0),
                   ElevatedButton(
@@ -163,6 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                 ],
+              ),
               ),
             ),
           ),
