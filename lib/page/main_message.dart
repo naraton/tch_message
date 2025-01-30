@@ -141,14 +141,28 @@ class _MainMessageState extends State<MainMessage> {
                                 width: 44.0,
                                 height: 44.0,
                                 decoration: BoxDecoration(
-                                  color: const Color.fromARGB(255, 172, 138, 250),
+                                  //color: const Color.fromARGB(255, 172, 138, 250),
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                     color: Colors.deepPurple,
                                     width: 2.0,
                                   ),
                                 ),
+
+                                child: Padding(
+                                  padding: EdgeInsets.all(2.0),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(40.0),
+                                    child: Image.network(
+                                      messageMap['image'],
+                                      width: 44.0,
+                                      height: 44.0,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
                               ),
+
                               Expanded(
                                 child: Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 0.0, 0.0),
