@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'page/main_message.dart';
 
 void main() async  {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,8 +18,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'TCH Message',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 40, 51, 172)),
         useMaterial3: true,
+        textTheme: GoogleFonts.ubuntuTextTheme(), // กำหนดฟอนต์สำหรับทั้งแอปพลิเคชัน
       ),
       home: const MyHomePage(title: 'TCH Message'),
     );
@@ -51,9 +53,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
         User? user = userCredential.user;
         if(user != null){
-          ScaffoldMessenger.of(context).showSnackBar(
+          /* ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Login Successful!')),
-          );
+          ); */
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => MainMessage()), // เปลี่ยนหน้าไปยัง main_message.dart
+            );
+          });
         }
       } 
       catch(e){
@@ -79,41 +87,41 @@ class _MyHomePageState extends State<MyHomePage> {
         if(snapshot.connectionState == ConnectionState.done){
           User? currentUser = _auth.currentUser;
           if(currentUser != null){
-            return Scaffold(
-              appBar: AppBar(title: Text("Welcome")),
-              body: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("Welcome, ${currentUser.email}"),
-                    ElevatedButton(
-                      onPressed: () async {
-                        await FirebaseAuth.instance.signOut();
-                      },
-                      child: Text('Logout'),
-                    ),
-                  ],
-                ),
-              ),
-            );
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => MainMessage()), // เปลี่ยนหน้าไปยัง main_message.dart
+              );
+            });
           }
-          
+
           else{
             return Scaffold(
-              backgroundColor: Color(0xFFE1ECFE),
+              //backgroundColor: Color.fromARGB(255, 162, 202, 255),
               body: Stack(children: [
                 Positioned.fill(
                   child: Container(
-                    decoration: BoxDecoration(
+                    /* decoration: BoxDecoration(
                       image: DecorationImage(
                         image: AssetImage('assets/background.png'), // ไฟล์ SVG
                         fit: BoxFit.none, // No scaling
                         alignment: Alignment.topLeft,
                         repeat: ImageRepeat.repeat, // Repeat the image
                       ),
+                    ), */
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color.fromARGB(255, 231, 242, 255),
+                          const Color.fromARGB(255, 103, 164, 255),
+                        ],
+                      ),
                     ),
                   ),
                 ),
+                
                 Center(
                   child: Align(
                     alignment: AlignmentDirectional(0.0, 0.0),
@@ -205,7 +213,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             ElevatedButton(
                               onPressed: _login,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.purple,
+                                backgroundColor: const Color.fromARGB(255, 40, 51, 172),
                                 foregroundColor: Colors.white,
                               ),
                               child: const Text(
