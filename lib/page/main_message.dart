@@ -144,7 +144,7 @@ class _MainMessageState extends State<MainMessage> {
                                   //color: const Color.fromARGB(255, 172, 138, 250),
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Colors.indigo[900]!,
+                                    color: Colors.deepPurple,
                                     width: 2.0,
                                   ),
                                 ),
