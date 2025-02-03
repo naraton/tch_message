@@ -6,41 +6,55 @@ plugins {
 }
 
 android {
-    namespace = "com.example.tch_message"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    compileSdk = 34 // ใช้เวอร์ชันล่าสุด
+    namespace "com.example.tch_message" // กำหนด namespace
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled true
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = "17"
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.tch_message"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        applicationId "com.example.tch_message"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled true // รองรับ MultiDex
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.debug
+            signingConfig signingConfigs.debug // ใช้คีย์ debug ชั่วคราว
+            minifyEnabled true  // ปิด minify ถ้าไม่ได้ใช้ Proguard
+            shrinkResources true // ✅ เปิดใช้งานเพื่อลบ resource ที่ไม่ได้ใช้
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE-FILE'
+    }
+
+    buildFeatures {
+        viewBinding true // เปิดใช้ View Binding (ถ้าต้องการ)
     }
 }
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4' // อัปเดตเป็นเวอร์ชันล่าสุด
+    implementation 'androidx.multidex:multidex:2.0.1' // รองรับ MultiDex
 }
 
 apply plugin: 'com.google.gms.google-services'

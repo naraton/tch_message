@@ -3,10 +3,13 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'page/main_message.dart';
+import 'notifications.dart'; // นำเข้า FirebaseNotificationService
 
 void main() async  {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  FirebaseNotificationService notificationService = FirebaseNotificationService();
+  await notificationService.initialize(); // เริ่มต้นการแจ้งเตือน
   runApp(const MyApp());
 }
 
