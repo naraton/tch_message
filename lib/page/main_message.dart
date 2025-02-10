@@ -114,7 +114,7 @@ class _MainMessageState extends State<MainMessage> {
           top: true,
           child: isLoading ? Center(child: CircularProgressIndicator()) : FirebaseAnimatedList(
             query: refQ,
-            reverse: true, // แสดงผลจากมากไปน้อย
+            //reverse: true, // แสดงผลจากมากไปน้อย
             itemBuilder: (context, snapshot, animation, index) {
               Map messageMap = snapshot.value as Map;
               return Column(

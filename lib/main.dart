@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'page/main_message.dart';
@@ -46,8 +48,35 @@ class _MyHomePageState extends State<MyHomePage> {
   final _formKey = GlobalKey<FormState>();
   final Future<FirebaseApp> firebase = Firebase.initializeApp();
 
+  void checkAndUpdateToken(String uid) async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    // รับ Token ปัจจุบัน
+    String? newToken = await messaging.getToken();
+
+    if (newToken != null) {
+      // ดึง Token เก่าจาก Firestore
+      DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+
+      String? oldToken = userSnapshot.exists ? userSnapshot['fcm_token'] : null;
+
+      if (oldToken == null || oldToken != newToken) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .set({'fcm_token': newToken}, SetOptions(merge: true));
+
+        print("Updated FCM Token: $newToken");
+      }
+    }
+  }
+
+
   void _login() async {
-    if(_formKey.currentState!.validate()){
+    if (_formKey.currentState!.validate()) {
       try {
         UserCredential userCredential = await _auth.signInWithEmailAndPassword(
           email: _emailController.text.trim(),
@@ -55,21 +84,35 @@ class _MyHomePageState extends State<MyHomePage> {
         );
 
         User? user = userCredential.user;
-        if(user != null){
-          /* ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login Successful!')),
-          ); */
+        if (user != null) {
+          checkAndUpdateToken(user.uid);
+
           WidgetsBinding.instance.addPostFrameCallback((_) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => MainMessage()), // เปลี่ยนหน้าไปยัง main_message.dart
+              MaterialPageRoute(builder: (context) => MainMessage()),
             );
           });
         }
-      } 
-      catch(e){
+      } on FirebaseAuthException catch (e) {
+        String errorMessage = "Login Failed: ${e.message}";
+
+        if (e.code == 'user-not-found') {
+          errorMessage = "No user found with this email.";
+        } else if (e.code == 'wrong-password') {
+          errorMessage = "Incorrect password. Please try again.";
+        } else if (e.code == 'invalid-email') {
+          errorMessage = "Invalid email format.";
+        } else if (e.code == 'user-disabled') {
+          errorMessage = "This user account has been disabled.";
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login Failed: $e')),
+          SnackBar(content: Text(errorMessage)),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("An unexpected error occurred: $e")),
         );
       }
     }
@@ -244,4 +287,5 @@ class _MyHomePageState extends State<MyHomePage> {
         );
       });
   }
+  
 }
