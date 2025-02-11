@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'page/main_message.dart';
 import 'notifications.dart'; // นำเข้า FirebaseNotificationService
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 40, 51, 172)),
         useMaterial3: true,
         textTheme: GoogleFonts.ubuntuTextTheme(), // กำหนดฟอนต์สำหรับทั้งแอปพลิเคชัน
+        scaffoldBackgroundColor: const Color(0xFFE1ECFE),
       ),
       home: const MyHomePage(title: 'TCH Message'),
     );
@@ -158,10 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [
-                          Color.fromARGB(255, 231, 242, 255),
-                          const Color.fromARGB(255, 103, 164, 255),
-                        ],
+                        colors: [Colors.blue.shade700, Colors.blue.shade300],
                       ),
                     ),
                   ),
@@ -179,14 +178,40 @@ class _MyHomePageState extends State<MyHomePage> {
                           mainAxisSize: MainAxisSize.max,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: <Widget>[
+                            Padding(
+                              padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 20.0),
+                              child: Container(
+                                width: 180.0,
+                                height: 180.0,
+                                clipBehavior: Clip.antiAlias,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.3), // สีเงา
+                                      blurRadius: 10, // ความเบลอของเงา
+                                      spreadRadius: 2, // การกระจายของเงา
+                                      offset: Offset(5, 5), // ตำแหน่งเงา (X, Y)
+                                    ),
+                                  ],
+                                ),
+                                child: ClipOval(
+                                  child: Image.asset(
+                                    'assets/logo.png',
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              ),
+                            ),
                             Align(
                               alignment: AlignmentDirectional(0.0, 0.0),
                               child: Padding(
                                 padding:
                                     EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 15.0),
                                 child: Text(
-                                  '"Login" TCH Message',
+                                  'TCH Message',
                                   style: TextStyle(
+                                    color: Colors.white,
                                     fontSize: 28.0,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 0.0,
@@ -202,10 +227,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                 labelText: 'Email',
                                 border: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                    color: Colors.blue,
+                                    color: Color(0xFF4B39EF),
                                     width: 1.0,
                                   ),
-                                  borderRadius: BorderRadius.all(Radius.circular(50)),
+                                  borderRadius: BorderRadius.all(Radius.circular(15)),
                                 ),
                                 filled: true,
                                 fillColor: Colors.white, // พื้นหลังขาว
@@ -234,10 +259,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                 labelText: 'Password',
                                 border: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                    color: Colors.blue,
+                                    color: Color(0xFF4B39EF),
                                     width: 1.0,
                                   ),
-                                  borderRadius: BorderRadius.all(Radius.circular(50)),
+                                  borderRadius: BorderRadius.all(Radius.circular(15)),
                                 ),
                                 filled: true,
                                 fillColor: Colors.white, // พื้นหลังขาว
@@ -258,8 +283,11 @@ class _MyHomePageState extends State<MyHomePage> {
                             ElevatedButton(
                               onPressed: _login,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color.fromARGB(255, 40, 51, 172),
+                                backgroundColor: const Color(0xFF4B39EF),
                                 foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15), // ปรับค่าโค้งมนของปุ่ม
+                                ),
                               ),
                               child: const Text(
                                 'Login',

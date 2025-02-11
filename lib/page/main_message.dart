@@ -45,10 +45,11 @@ class _MainMessageState extends State<MainMessage> {
         FocusScope.of(context).unfocus();
         FocusManager.instance.primaryFocus?.unfocus();
       },
+
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Color.fromARGB(255, 40, 51, 172),
+          backgroundColor: Color(0xFF4B39EF),
           automaticallyImplyLeading: false,
           title: Text(
             'TCH Messages',
@@ -58,6 +59,7 @@ class _MainMessageState extends State<MainMessage> {
               letterSpacing: 0.0,
             ),
           ),
+
           actions: [
             Theme(
               data: Theme.of(context).copyWith(
@@ -107,6 +109,11 @@ class _MainMessageState extends State<MainMessage> {
                   switch (result) {
                     case 'Logout':
                       FirebaseAuth.instance.signOut();
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const MyApp()),
+                      );
+                    case 'Profile':
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => const MyApp()),
@@ -175,7 +182,7 @@ class _MainMessageState extends State<MainMessage> {
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       border: Border.all(
-                                        color: Colors.indigo[900]!,
+                                        color: const Color(0xFF4B39EF),
                                         width: 2.0,
                                       ),
                                     ),

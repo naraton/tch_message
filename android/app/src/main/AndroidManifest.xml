@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="tch_message"
+        android:label="TCH Message"
         android:name="${applicationName}"
         android:icon="@drawable/app_icon">
         <activity
