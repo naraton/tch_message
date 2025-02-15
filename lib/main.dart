@@ -3,10 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'page/main_message.dart';
-import 'notifications.dart'; // นำเข้า FirebaseNotificationService
+import 'notifications.dart';
 
 void main() async  {
   WidgetsFlutterBinding.ensureInitialized();
@@ -71,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
             .doc(uid)
             .set({'fcm_token': newToken}, SetOptions(merge: true));
 
-        print("Updated FCM Token: $newToken");
+        //print("Updated FCM Token: $newToken");
       }
     }
   }
@@ -203,6 +202,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                               ),
                             ),
+                            
                             Align(
                               alignment: AlignmentDirectional(0.0, 0.0),
                               child: Padding(

@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
+import 'package:tch_message/page/change_password.dart';
+import 'package:tch_message/page/profile.dart';
 import '../main.dart';
 
 class MainMessage extends StatefulWidget {
@@ -19,7 +21,7 @@ class _MainMessageState extends State<MainMessage> {
   void initState() {
     super.initState();
     final User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
+    if(user != null){
       refQ = FirebaseDatabase.instance
           .ref()
           .child('messages')
@@ -76,7 +78,7 @@ class _MainMessageState extends State<MainMessage> {
                     child: Row(
                       children: [
                         Icon(Icons.person, color: Colors.white),
-                        SizedBox(width: 8),
+                        SizedBox(width: 6.5),
                         Text('Profile', style: TextStyle(color: Colors.white)),
                       ],
                     ),
@@ -87,9 +89,30 @@ class _MainMessageState extends State<MainMessage> {
                     child: Row(
                       children: [
                         Icon(Icons.screen_lock_rotation, color: Colors.white),
-                        SizedBox(width: 8),
+                        SizedBox(width: 6.5),
                         Text('Change Password', style: TextStyle(color: Colors.white)),
                       ],
+                    ),
+                  ),
+
+                  const PopupMenuItem<String>(
+                    value: 'Delete Message',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_sweep, color: Colors.white),
+                        SizedBox(width: 6.5),
+                        Text('Delete Message', style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+
+                   // เส้นสีขาวคั่นก่อน Logout
+                  const PopupMenuItem<String>(
+                    enabled: false, // ทำให้กดไม่ได้
+                    child: Divider(
+                      color: Colors.white, // เส้นสีขาว
+                      thickness: 1, // ความหนา 1px
+                      height: 1, // กำหนดความสูง
                     ),
                   ),
 
@@ -98,26 +121,34 @@ class _MainMessageState extends State<MainMessage> {
                     child: Row(
                       children: [
                         Icon(Icons.logout, color: Colors.white),
-                        SizedBox(width: 8),
+                        SizedBox(width: 6.5),
                         Text('Logout', style: TextStyle(color: Colors.white)),
                       ],
                     ),
                   ),
                 ],
 
-                onSelected: (String result) {
+                onSelected: (String result) async {
                   switch (result) {
-                    case 'Logout':
-                      FirebaseAuth.instance.signOut();
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => const MyApp()),
-                      );
                     case 'Profile':
                       Navigator.pushReplacement(
                         context,
+                        MaterialPageRoute(builder: (context) => ProfileWidget()),
+                      );
+
+                    case 'Change Password':
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => ChangepassswordWidget()),
+                      );
+
+                    case 'Logout':
+                      await FirebaseAuth.instance.signOut();
+                      Navigator.pushReplacement(
+                        context,
                         MaterialPageRoute(builder: (context) => const MyApp()),
                       );
+                      
                     break;
                   }
                 },
