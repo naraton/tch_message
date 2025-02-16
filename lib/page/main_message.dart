@@ -262,7 +262,6 @@ class _MainMessageState extends State<MainMessage> {
                               borderRadius: BorderRadius.circular(12.0),
                             ),
                             child: GestureDetector(
-
                               onLongPress: () {
                                 // เมื่อกดค้างแสดงข้อความแจ้งเตือน
                                 showDialog(
