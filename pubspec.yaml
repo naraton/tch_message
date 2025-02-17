@@ -1,3 +1,12 @@
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/load_logo.png
+  android_gravity: center  # วางโลโก้ตรงกลาง
+  ios_content_mode: center  # วางโลโก้ตรงกลาง
+  android: true
+  ios: true
+
+
 name: tch_message
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
@@ -42,6 +51,7 @@ dependencies:
   flutter_local_notifications: ^14.1.5
   cloud_firestore: ^4.15.10
   flutter_svg: ^2.0.9
+  flutter_native_splash: ^2.3.10
 
 dev_dependencies:
   flutter_test:
