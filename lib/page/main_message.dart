@@ -213,7 +213,19 @@ class _MainMessageState extends State<MainMessage> {
                     break;
 
                     case 'Delete Message':
-                      showAlertDialog(context);
+                      refQ.once().then((snapshot) {
+                        if(snapshot.snapshot.value != null){
+                          showAlertDialog(context);
+                        }
+                        else{
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("ไม่มีรายการข้อความให้ลบ"),
+                              duration: Duration(seconds: 3),
+                            ),
+                          );
+                        }
+                      });
                     break;
 
                     case 'Logout':
