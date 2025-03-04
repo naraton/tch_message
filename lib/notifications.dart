@@ -3,93 +3,97 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class FirebaseNotificationService {
-  late FirebaseMessaging messaging;
-  late FlutterLocalNotificationsPlugin localNotifications;
-
-  FirebaseNotificationService() {
-    messaging = FirebaseMessaging.instance;
-    localNotifications = FlutterLocalNotificationsPlugin();
-  }
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
 
   Future<void> initialize() async {
-    await Firebase.initializeApp();
-    
-    // ตั้งค่า Notification Channel สำหรับ Android
+    await Firebase.initializeApp(); // 🔹 เรียกใช้งาน Firebase
+
+    // 🔹 ขอสิทธิ์การแจ้งเตือนสำหรับ iOS
+    NotificationSettings settings = await _firebaseMessaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      print("✅ Notifications are enabled");
+    } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+      print("⚠️ Notifications are provisionally enabled");
+    } else {
+      print("❌ Notifications are not enabled");
+      return; // ออกจากฟังก์ชันถ้าไม่ได้รับอนุญาต
+    }
+
+    // 🔹 ตั้งค่า Local Notification สำหรับ Android
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('app_icon'); // ใช้แอปไอคอนที่ต้องการ
+        AndroidInitializationSettings('@mipmap/ic_launcher'); // ใช้ไอคอนแอป
     final InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
     );
-    await localNotifications.initialize(initializationSettings);
+    await _localNotifications.initialize(initializationSettings);
 
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-    await requestNotificationPermission();
+    // 🔹 ดึง FCM Token
     await getToken();
+
+    // 🔹 ตั้งค่า Listeners สำหรับการแจ้งเตือน
     setupForegroundListener();
+    setupBackgroundHandler();
   }
 
-  static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-    await Firebase.initializeApp();
-    print("Handling a background message: ${message.messageId}");
-  }
-
-  Future<void> requestNotificationPermission() async {
-    NotificationSettings settings = await messaging.requestPermission();
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print("Notification permission granted.");
-    } else {
-      print("Notification permission denied.");
-    }
-  }
-
+  /// 🔹 ดึง FCM Token
   Future<void> getToken() async {
-    String? token = await messaging.getToken();
-    print("FCM Token: $token");
+    String? token = await _firebaseMessaging.getToken();
+    print("🎯 FCM Token: $token");
   }
 
+  /// 🔹 ตั้งค่า Listener สำหรับ Foreground Notification
   void setupForegroundListener() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print("Received message: ${message.notification?.title}");
+      print("📩 Foreground message received: ${message.notification?.title}");
       showLocalNotification(message);
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print("Tapped notification: ${message.notification?.title}");
+      print("📲 User tapped the notification: ${message.notification?.title}");
     });
   }
 
-  Future<void> showLocalNotification(RemoteMessage message) async {
-    /* var bigPictureStyle = BigPictureStyleInformation(
-      ByteArrayAndroidBitmap.fromBase64String(message.data['image'] ?? ''),
-      largeIcon: message.data['icon'] != null
-          ? ByteArrayAndroidBitmap.fromBase64String(message.data['icon'])
-          : null, // ตรวจสอบว่า icon ไม่เป็น null ก่อน
-      contentTitle: message.notification?.title,
-      summaryText: message.notification?.body,
-    ); */
+  /// 🔹 ตั้งค่า Background Handler
+  static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+    await Firebase.initializeApp();
+    print("⏳ Handling a background message: ${message.messageId}");
+  }
 
+  void setupBackgroundHandler() {
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  }
+
+  /// 🔹 แสดง Local Notification สำหรับ Android
+  Future<void> showLocalNotification(RemoteMessage message) async {
     var bigPictureStyle = BigPictureStyleInformation(
-      ByteArrayAndroidBitmap.fromBase64String(message.data['image'] ?? ''),
+      ByteArrayAndroidBitmap.fromBase64String(message.data['image'] ?? ''), // รองรับภาพ
       contentTitle: message.notification?.title,
       summaryText: message.notification?.body,
     );
 
-    var android = AndroidNotificationDetails(
+    var androidDetails = AndroidNotificationDetails(
       'channel_id', 
       'channel_name',
-      icon: 'app_icon',
+      icon: '@mipmap/ic_launcher',
       importance: Importance.max,
       priority: Priority.high,
-      styleInformation: bigPictureStyle, // เพิ่ม styleInformation
-      playSound: true,  // ให้เล่นเสียง
-      enableVibration: true, // ให้สั่น
+      styleInformation: bigPictureStyle, 
+      playSound: true,
+      enableVibration: true,
     );
-    var platform = NotificationDetails(android: android);
-    await localNotifications.show(
+    
+    var platformDetails = NotificationDetails(android: androidDetails);
+    await _localNotifications.show(
       0,
       message.notification?.title,
       message.notification?.body,
-      platform,
+      platformDetails,
     );
   }
 }
